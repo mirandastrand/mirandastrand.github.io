@@ -24,11 +24,6 @@ $(document).ready(function() {
        //build the letter frequency table
        buildLetterTable();
 
-	//get the starting 4 letters
-	for (var i = 0; i < 4; i++) {
-		getRandomLetter(false);
-	}
-
 	//make the letter pool sortable
 	$('#pool').sortable({items: 'td', tolerance: 'pointer', connectWith: $('.connect'), dropOnEmpty: true, opacity: 1, start: function() {
 		$('.word').addClass('highlight');
@@ -38,6 +33,11 @@ $(document).ready(function() {
 
 	//make the first word sortable
 	makeSortableWord(0);
+
+	//get the starting 4 letters
+	for (var i = 0; i < 4; i++) {
+		getRandomLetter(false);
+	}
 });
 
 //
@@ -67,11 +67,18 @@ function makeSortableWord(num) {
 //
 function getRandomLetter(hamsterTurn) {
 	if (hamsterTurn) playHamsterTurn();
+
 	var i = Math.floor(Math.random()*letterTable.length);
 	var letter = letterTable[i];
 	var rowNum = Math.floor(Math.random()*2 + 1);
 	$('#pool').find('tr').after('<td id = \"letter' + letterId + '\" class = \"circle LETTER_' + letter + '\" width = "80">' + letter + '</td>');
 	letterId++;
+
+	//remove last letter if there are over 10
+	var poolLetters = getWordFromArr($('#pool').sortable('toArray'));
+	if (poolLetters.length > 10) {
+		$('#pool').find('td:last').remove();
+	}
 }
 
 //
@@ -150,6 +157,7 @@ function playHamsterTurn() {
 			for (var l = 0; l < anagramMap[sortedStr].length; l++) {
 				if (str !== anagramMap[sortedStr][l] && !alreadyPlayed[anagramMap[sortedStr][l]]) {
 					hamsterWord = anagramMap[sortedStr][l];
+					//console.log('hamster word: ' + hamsterWord);
 					return true;
 				}
 			}
@@ -206,11 +214,16 @@ function playHamsterTurn() {
 
 	//check the words with one letter added from the pool
 	for (var pool = 0; pool < poolLetters.length; pool++) {
+
+		//SELECT WORDS ACTUALLY IN PLAY
 		for (var wordNum = 0; wordNum < wordId; wordNum++) {
 			wordArr = $('#word' + wordNum).sortable('toArray');
 			word = getWordFromArr(wordArr);
 			checkWord = word + poolLetters.charAt(pool);
 			if ((hamsterDict[checkWord] && !alreadyPlayed[checkWord]) || findAnagram(checkWord)) {
+			      if (hamsterDict[checkWord] && !alreadyPlayed[checkWord]) {
+					hamsterWord = checkWord;
+			      }
 				$('#table' + wordNum).remove();
 				letterClass = 'LETTER_' + (hamsterWord.toUpperCase()).charAt(pool);
 				$('#pool').find('td.' + letterClass).remove();
