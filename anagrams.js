@@ -61,9 +61,12 @@ function makeSortableWord(num) {
 		}
 	
 	       //disallow new letter and add this word to the must play list
-	       if (!alreadyPlayed[currWord]) {
+	       if (!alreadyPlayed[getWordFromArr(currWord)]) {
 			$('#newLetter').attr('disabled', true).css('opacity', '0.5');
 			mustPlay[this.id] = true;
+	       } else {
+			$('#newLetter').attr('disabled', false).css('opacity', '1');
+			if (mustPlay[this.id]) delete mustPlay[this.id];
 	       }
 	}});
 
