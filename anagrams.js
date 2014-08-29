@@ -1,7 +1,7 @@
 var dict = {}; //dictionary of valid english words
+var hamsterDict = {}; //does not have to be the same as the dictionary of valid words
 var anagramMap = {}; //map of sorted letter combinations to words
-		     //for use by hamster. Does not have to be the same
-		     //set of letters as the valid words dictionary
+		     //for use by hamster
 var letterTable = []; //stores letters according to frequency
 var score = 0;
 var hamsterScore = 0;
@@ -16,7 +16,7 @@ var wordId = 1; //count of all the words on the board to create unique identifie
 //
 $(document).ready(function() {
        loadDictionary('longdict.txt', dict);
-       loadAnagramMap('longdict.txt', anagramMap);
+       loadAnagramMap('longdict.txt', hamsterDict, anagramMap);
 
        $(':button').button({});
        $('.letter').css('cursor', 'move');
@@ -273,15 +273,17 @@ function loadDictionary(dictName, dictionary) {
 }
 
 //
-// Asynchronously loads the anagram map for the hamster to use
+// Asynchronously loads the hamster's dictionary and the anagram map 
+// for the hamster to use
 //
-function loadAnagramMap(mapName, map) {
+function loadAnagramMap(mapName, dictionary, map) {
 	$.get(mapName, function( txt ) {
     		//Get an array of all the words
     		var words = txt.split( "\n" );
  
     		for ( var i = 0; i < words.length; i++ ) {
-
+			dictionary[ words[i] ] = true;
+	
 			//sort each 4+ letter word to account for it in the anagram map
 			if (words[i].length >= 4) {
 				var sortedWordArr = words[i].split(''); //make array
