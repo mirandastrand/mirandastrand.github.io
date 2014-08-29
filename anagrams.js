@@ -1,69 +1,30 @@
 var dict = {}; //dictionary of valid english words
-var hamsterDict = {}; //dictionary of hamster's words
-var anagramMap = {}; //dictionary of all sorted letter combinations
-var hamsterAnagramMap = {};
+var anagramMap = {}; //map of sorted letter combinations to words
+		     //for use by hamster. Does not have to be the same
+		     //set of letters as the valid words dictionary
 var letterTable = []; //stores letters according to frequency
-var score = 0; //player's score
+var score = 0;
 var hamsterScore = 0;
 var alreadyPlayed = {}; //dictionary of words already played
 var letterId = 0; //count of all letters played to create unique identifiers
 var wordId = 1; //count of all the words on the board to create unique identifiers
+		//starts at 1 to account for the word placed initially on the board
 
+// 
+// Handles necessary game initialization: loads dictionary and anagram maps,
+// establishes sortable letters and words, initializes buttons, gets starting letters
+//
 $(document).ready(function() {
-	//load the dictionary asynchronously
-	$.get( "longdict.txt", function( txt ) {
-    		//Get an array of all the words
-    		var words = txt.split( "\n" );
- 
-    		//Add them as properties to the dict to allow for fast lookup
-    		for ( var i = 0; i < words.length; i++ ) {
-        		dict[ words[i] ] = true;
-	
-			//sort each 4+ letter word to account for it in the anagram map
-			if (words[i].length >= 4) {
-				var sortedWordArr = words[i].split(''); //make array
-				sortedWordArr = sortedWordArr.sort();
-				var sortedWord = sortedWordArr.join('');
-				if (anagramMap.hasOwnProperty(sortedWord)) {
-					anagramMap[sortedWord][anagramMap[sortedWord].length] = words[i]; //add word to the array
-				} else {
-					anagramMap[sortedWord] = [words[i]];
-				}
-			}
-    		}
-		console.log('loaded and ready');
-	});
+       loadDictionary('longdict.txt', dict);
+       loadAnagramMap('longdict.txt', anagramMap);
 
-	//load hamster's dictionary asynchronously as well
-	$.get( "longdict.txt", function( txt ) {
-    		//Get an array of all the words
-    		var hwords = txt.split( "\n" );
- 
-    		//Add them as properties to the dict to allow for fast lookup
-    		for ( var h = 0; h < hwords.length; h++ ) {
-        		dict[ hwords[h] ] = true;
-	
-			//sort each 4+ letter word to account for it in the anagram map
-			if (hwords[h].length >= 4) {
-				var hsortedWordArr = hwords[h].split(''); //make array
-				hsortedWordArr = hsortedWordArr.sort();
-				var hsortedWord = hsortedWordArr.join('');
-				if (hamsterAnagramMap.hasOwnProperty(hsortedWord)) {
-					hamsterAnagramMap[hsortedWord][hamsterAnagramMap[hsortedWord].length] = hwords[h]; //add word to the array
-				} else {
-					hamsterAnagramMap[hsortedWord] = [hwords[h]];
-				}
-			}
-    		}
-		console.log('hamster map loaded and ready');
-	});
+       $(':button').button({});
+       $('.letter').css('cursor', 'move');
+       
+       //build the letter frequency table
+       buildLetterTable();
 
-	$(':button').button({});
-
-	//build the letter frequency table
-	buildLetterTable();
-
-	//get the starting 4 letters now that dictionary must be loaded
+	//get the starting 4 letters
 	for (var i = 0; i < 4; i++) {
 		getRandomLetter(false);
 	}
@@ -77,12 +38,13 @@ $(document).ready(function() {
 
 	//make the first word sortable
 	makeSortableWord(0);
-
-	$('.letter').css('cursor', 'move');
 });
 
-// Makes a word sortable, given the word count number. Assumes this word has already been added to the html
+//
+// Makes a word sortable, given the word count number. 
+// Assumes this word has already been added to the html
 // Also initially disables the Play Word button for this word
+//
 function makeSortableWord(num) {
 	$('#word' + num).sortable({items: 'td', tolerance: 'pointer', dropOnEmpty: true, opacity: 1, start: function () {
 		$(this).addClass('highlight');
@@ -91,9 +53,7 @@ function makeSortableWord(num) {
 	}, update: function() {
 		//enable the Play Word button when word is 4 letters long (plus 5th 'none' character)
 		if ($(this).sortable('toArray').length == 5) {
-			//console.log('3+ letter word');
 			var wordNum = (this.id).substring(4);
-			console.log(wordNum);
 			$('#playWord' + wordNum).attr('disabled', false).css('opacity', '1');
 		}
 	}});
@@ -101,8 +61,10 @@ function makeSortableWord(num) {
 	$('#playWord' + num).attr('disabled', true).css('opacity', '0.5');
 }
 
+//
 // Gets a random letter out of the letter table and adds it to the pool
 // If given 'true', plays a hamster turn first
+//
 function getRandomLetter(hamsterTurn) {
 	if (hamsterTurn) playHamsterTurn();
 	var i = Math.floor(Math.random()*letterTable.length);
@@ -112,10 +74,11 @@ function getRandomLetter(hamsterTurn) {
 	letterId++;
 }
 
-// Sets up a new word
+//
+// Sets up a new word block
+//
 function makeNewWord() {
 	var html = '<p><table id = \"table' + wordId + '\"><tr><td><table id = \"word' + wordId + '\" class = \"word connect\"><tr><td id = \"none\"></td></tr></table></td><td width = \"20\"></td><td><button id = \"playWord' + wordId + '\" onclick = \"playWord(' + wordId + ')\">Play Word</button></td></tr></table>';
-	console.log(html);
 	
 	//add new html, make the button, and make the new word sortable
 	$('#topWord').after(html);
@@ -129,15 +92,15 @@ function makeNewWord() {
 	wordId++;
 }
 
+//
 // Plays the current word. Checks if it is a valid word. If so, adds points according
 // to the number of letters. If not, subtracts points.
+//
 function playWord(num) {
 	var idArr = $('#word' + num).sortable('toArray');
 	var word = getWordFromArr(idArr);
-	console.log(word);
 	if (alreadyPlayed[word]) return; //ignore words already played
 	if (dict[word]) {
-		console.log('real word!');
 		score += word.length * word.length;
 		alreadyPlayed[word] = true;
 	} else {
@@ -148,7 +111,10 @@ function playWord(num) {
 	$('#score').html('Player: ' + score);
 }
 
-// Given an array of ids of letters (as returned by sortable's toArray), gets the word that they spell
+//
+// Given an array of ids of letters (as returned by sortable's toArray), 
+// gets the word that they spell
+//
 function getWordFromArr(arr) {
 	var word = '';
 	for (var i = 0; i < arr.length; i++) {
@@ -162,21 +128,28 @@ function getWordFromArr(arr) {
 	return word;
 }
 
-// Finds anagrams on the board and steals the for the hamster
+//
+// Finds words on the board and steals them for the hamster
+// Looks for anagrams of the player's words, words in the pool if
+// it contains at least 6 letters, and words that can be made by 
+// adding one letter to the player's words. Steals at most one word.
+//
 function playHamsterTurn() {
 	var stolenWord = '';
 	var hamsterWord = '';
 
-	// Checks the hamsterAnagramMap for anagrams of a given word. Sets hamsterWord to be
-	// be the first one found. Makes sure the anagram has not already been played
+        //
+	// Checks the anagram map for anagrams of a given word. Sets hamsterWord to be
+       // be the first one found. Makes sure the anagram has not already been played
+       //
 	function findAnagram(str) {
 		var strArr = str.split('');
 		strArr = strArr.sort();
 		var sortedStr = strArr.join('');
-		if (hamsterAnagramMap.hasOwnProperty(sortedStr)) {
-			for (var l = 0; l < hamsterAnagramMap[sortedStr].length; l++) {
-				if (str !== hamsterAnagramMap[sortedStr][l] && !alreadyPlayed[hamsterAnagramMap[sortedStr][l]]) {
-					hamsterWord = hamsterAnagramMap[sortedStr][l];
+		if (anagramMap.hasOwnProperty(sortedStr)) {
+			for (var l = 0; l < anagramMap[sortedStr].length; l++) {
+				if (str !== anagramMap[sortedStr][l] && !alreadyPlayed[anagramMap[sortedStr][l]]) {
+					hamsterWord = anagramMap[sortedStr][l];
 					return true;
 				}
 			}
@@ -185,7 +158,9 @@ function playHamsterTurn() {
 		}
 	}
 
+	//
 	// Finds all subsets of a string and checks them for anagrams
+	//
 	function findSubsetAnagrams(str) {
 		if (str.length < 4) return false;
 		if (findAnagram(str)) return true;
@@ -204,12 +179,10 @@ function playHamsterTurn() {
 		//look for anagrams of the words themselves first
 		if (findAnagram(word)) {
 			stolenWord = word;
-			console.log('hamster rearranged ' + stolenWord + ' to make ' + hamsterWord);
 			$('#table' + j).remove();
 			hamsterScore += hamsterWord.length * hamsterWord.length;
 			alreadyPlayed[hamsterWord] = true;
 		       $('#hamsterScore').html('Hamster: ' + hamsterScore);
-			//notify player
 			notifyPlayer('Hamster rearranged ' + stolenWord + ' to make ' + hamsterWord, 'victory')
 			return; //return early. only need to find one word
 		}	
@@ -224,8 +197,6 @@ function playHamsterTurn() {
 			var letterClass = 'LETTER_' + (hamsterWord.toUpperCase()).charAt(k);
 			$('#pool').find('td.' + letterClass).first().remove();
 		}
-
-		console.log('hamster made ' + hamsterWord + ' from the pool');
 		hamsterScore += hamsterWord.length * hamsterWord.length;
 		alreadyPlayed[hamsterWord] = true;
 		$('#hamsterScore').html('Hamster: ' + hamsterScore);
@@ -240,7 +211,6 @@ function playHamsterTurn() {
 			word = getWordFromArr(wordArr);
 			checkWord = word + poolLetters.charAt(pool);
 			if ((hamsterDict[checkWord] && !alreadyPlayed[checkWord]) || findAnagram(checkWord)) {
-				console.log('hamster added ' + poolLetters.charAt(pool) + ' to ' + word + ' to make ' + hamsterWord);
 				$('#table' + wordNum).remove();
 				letterClass = 'LETTER_' + (hamsterWord.toUpperCase()).charAt(pool);
 				$('#pool').find('td.' + letterClass).remove();
@@ -248,14 +218,17 @@ function playHamsterTurn() {
 				alreadyPlayed[hamsterWord] = true;
 		       		$('#hamsterScore').html('Hamster: ' + hamsterScore);
 				notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' to ' + word + ' to make ' + hamsterWord, 'victory');
-				return; //return early. only need to find one word
+				return; //return. only need to find one word
 			}	
 		}
 	}
 	
 }
 
-// Prints a message for the player
+//
+// Prints the given message for the player
+// pic specifies the image for a hamster comment
+//
 function notifyPlayer(message, pic) {
 	if (pic === 'victory') {
 		$('#hamster').attr('src', 'images/hamstervictory.png');
@@ -269,8 +242,10 @@ function notifyPlayer(message, pic) {
         }, 1900);
 }
 
+//
 // Returns the type of a particular class. Example, LETTER_A will return 'A' for 
 // the 'letter' attribute
+//
 function getType(block, attribute) {
 	attribute = attribute.toUpperCase();
 	var classes = $(block).attr('class');
@@ -281,10 +256,54 @@ function getType(block, attribute) {
 	return classes.substring(start, end);
 }
 
+//
+// Asynchronously loads the dictionary of valid words
+//
+function loadDictionary(dictName, dictionary) {
+	$.get(dictName, function( txt ) {
+    		//Get an array of all the words
+    		var words = txt.split( "\n" );
+ 
+    		//Add them as properties to the dictionary to allow for fast lookup
+    		for ( var i = 0; i < words.length; i++ ) {
+        		dictionary[ words[i] ] = true;
+    		}
+	});
+
+}
+
+//
+// Asynchronously loads the anagram map for the hamster to use
+//
+function loadAnagramMap(mapName, map) {
+	$.get(mapName, function( txt ) {
+    		//Get an array of all the words
+    		var words = txt.split( "\n" );
+ 
+    		for ( var i = 0; i < words.length; i++ ) {
+
+			//sort each 4+ letter word to account for it in the anagram map
+			if (words[i].length >= 4) {
+				var sortedWordArr = words[i].split(''); //make array
+				sortedWordArr = sortedWordArr.sort();
+				var sortedWord = sortedWordArr.join('');
+				if (map.hasOwnProperty(sortedWord)) {
+					map[sortedWord][map[sortedWord].length] = words[i]; //add word to the array
+				} else {
+					map[sortedWord] = [words[i]];
+				}
+			}
+    		}
+	});
+
+}
+
+//
 // Builds the letter table according to english letter frequencies. For example,
 // E is listed in 127 out of 1000 places. So randomly indexing into the table
 // will return letters at roughly their frequency of use. Frequency of the least 
 // common letters has been adjusted - they are listed 1-2 extra times
+//
 function buildLetterTable() {
 	for (var i = 0; i < 82; i++) {
 		letterTable[letterTable.length] = 'A';
