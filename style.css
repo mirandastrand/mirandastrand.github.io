@@ -1,0 +1,109 @@
+body {
+    /*background-image:  url(images/background4.jpg);*/
+    background-color: #CEF6CE;
+    background-size:   cover;                      
+    background-repeat: no-repeat;
+    margin: 20px;
+    margin-right: 40px;
+    font-family: trebuchet ms, helvetica;
+    color: #2E9AFE;
+}
+
+div.title {
+    color: #2E9AFE;
+    font-size: 600%;
+    font-weight: bold;
+    /*font-variant: small-caps;*/
+    opacity: .7;
+    align: center;
+    padding:0;
+}
+
+
+div.text {
+    position: relative;
+    text-align: center;
+}
+
+#message {
+    color: white;
+    border: 5px solid red;
+    font-size: 50px;
+    font-weight: bold;
+    font-variant: small-caps;
+    position: fixed;
+    z-index: 1000;
+    left: 150px;
+    top: 150px;
+    background-color: #2E9AFE;
+    border-radius: 40px 10px;
+    opacity: 1;
+    padding: 10px;
+}
+
+#hamster {
+    width: 150px;
+}
+
+#rules {
+    align: center;
+    text-align: center;
+    opacity: .8;
+    font-size: 18px;
+}
+
+#score {
+    font-size: 40px;
+    font-weight: bold;
+    font-variant: small-caps;
+    opacity: 0.7;
+    color: #2E9AFE;
+}
+
+#hamsterScore {
+    font-size: 40px;
+    font-weight: bold;
+    font-variant: small-caps;
+    opacity: 0.7;
+    color: #2E9AFE;
+}
+
+#pool {
+    text-align: center;
+    vertical-align: center;
+    opacity: .7;
+    min-height: 80px;
+    min-width: 80px;
+}
+
+.word {
+    border-radius: 10px 40px;
+    background: #2E9AFE;
+    border: 0;
+    min-width: 350px;
+    height: 85px;
+    text-align: center;
+    vertical-align: center;
+    opacity: .7;
+    align: center;
+    padding: 4px;
+}
+
+.highlight {
+    /*background: #2EFEF7 !important;*/
+    opacity: 1 !important;
+}
+
+.circle{
+    width:80px;
+    height:80px;
+    border-radius: 40px;
+    font-size:50px;
+    color: #2E9AFE;
+    line-height:60px;
+    text-align:center;
+    vertical-align: center;
+    background:white;
+    opacity: 1;
+    cursor: move;
+}
