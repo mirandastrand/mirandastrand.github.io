@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<link rel="stylesheet" href="style.css"/>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/smoothness/jquery-ui.css" />
+	<script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.0/jquery-ui.min.js"></script>
+	<script src = "anagrams.js"></script>
+</head>
+<body>
+  <table width = "100%"><tr>
+    <td><div id = "hamsterScore" align = "left" width = "50%">Hamster: 0</div></td>
+    <td><div id = "score" align = "right">Player: 0</div></td>
+  </tr></table>
+
+  <div id = "board" align = "center">
+
+   <!-- Sets up the pool of new letters -->
+
+   <table id = "pool" class = "connect" cellspacing = "10" height = "80" border = "0">
+     <tr id = "row1"><td id = "none"></td></tr>
+   </table>
+  
+    <p><br>
+	<button id = "newLetter" onclick = "getRandomLetter(true)">New Letter</button>
+	<button id = "newWord" onclick = "makeNewWord()">New Word</button>
+    <p><br>
+
+   <!-- Marks the spot for the initial word -->
+	
+   <div id = "topWord"></div>
+<p>
+   <table id = "table0"><tr><td>
+   <table id = "word0" class = "word connect"><tr>
+	<td id = "none"></td>
+   </tr></table>
+   </td>
+   <td width = "20"></td>
+   <td><button id = "playWord0" onclick = "playWord(0)">Play Word</button></td>
+   </tr></table>
+
+  </div>
+  <br><br>
+  
+  <div class = "title"><div class = "text">
+	<img src = "images/hamster.png" id = "hamster">
+	ANAGRAMSTER
+  </div></div> 
+  <br>
+  <div id = "rules">Create all the 4+ letter words you can by adding and rearranging the given tiles.
+  <br>
+When you can make no more changes, click "New Letter." But beware! 
+<br>
+If the hamster can find an anagram, he'll steal your word...</div>
+
+</body>
+</html>
