@@ -7,8 +7,9 @@ var score = 0;
 var hamsterScore = 0;
 var alreadyPlayed = {}; //dictionary of words already played
 var letterId = 0; //count of all letters played to create unique identifiers
-var wordId = 1; //count of all the words on the board to create unique identifiers
+var wordId = 0; //count of all the words on the board to create unique identifiers
 		//starts at 1 to account for the word placed initially on the board
+var mustPlay = {}; //words that have been altered and must be played before getting new letter
 
 // 
 // Handles necessary game initialization: loads dictionary and anagram maps,
@@ -32,6 +33,7 @@ $(document).ready(function() {
 	}});
 
 	//make the first word sortable
+	makeNewWord();
 	makeSortableWord(0);
 
 	//get the starting 4 letters
@@ -52,10 +54,17 @@ function makeSortableWord(num) {
 		$(this).removeClass('highlight');
 	}, update: function() {
 		//enable the Play Word button when word is 4 letters long (plus 5th 'none' character)
-		if ($(this).sortable('toArray').length == 5) {
+	       var currWord = $(this).sortable('toArray');
+		if (currWord.length == 5) {
 			var wordNum = (this.id).substring(4);
 			$('#playWord' + wordNum).attr('disabled', false).css('opacity', '1');
 		}
+	
+	       //disallow new letter and add this word to the must play list
+	       if (!alreadyPlayed[currWord]) {
+			$('#newLetter').attr('disabled', true).css('opacity', '0.5');
+			mustPlay[this.id] = true;
+	       }
 	}});
 
 	$('#playWord' + num).attr('disabled', true).css('opacity', '0.5');
@@ -70,7 +79,14 @@ function getRandomLetter(hamsterTurn) {
 
 	var i = Math.floor(Math.random()*letterTable.length);
 	var letter = letterTable[i];
-	var rowNum = Math.floor(Math.random()*2 + 1);
+	//var rowNum = Math.floor(Math.random()*2 + 1);
+	addLetter(letter);
+}
+
+//
+// Adds the given letter to the pool
+//
+function addLetter(letter) {
 	$('#pool').find('tr').after('<td id = \"letter' + letterId + '\" class = \"circle LETTER_' + letter + '\" width = "80">' + letter + '</td>');
 	letterId++;
 
@@ -79,17 +95,19 @@ function getRandomLetter(hamsterTurn) {
 	if (poolLetters.length > 10) {
 		$('#pool').find('td:last').remove();
 	}
+
 }
 
 //
 // Sets up a new word block
 //
 function makeNewWord() {
-	var html = '<p><table id = \"table' + wordId + '\"><tr><td><table id = \"word' + wordId + '\" class = \"word connect\"><tr><td id = \"none\"></td></tr></table></td><td width = \"20\"></td><td><button id = \"playWord' + wordId + '\" onclick = \"playWord(' + wordId + ')\">Play Word</button></td></tr></table>';
+	var html = '<p><table id = \"table' + wordId + '\"><tr><td rowspan = \"2\"><table id = \"word' + wordId + '\" class = \"word connect\"><tr><td id = \"none\"></td></tr></table></td><td width = \"20\"></td><td><button id = \"playWord' + wordId + '\" onclick = \"playWord(' + wordId + ')\">Play Word</button></tr><tr><td></td><td><button id = \"removeWord' + wordId + '\" onclick = \"removeWord(' + wordId + ')\">Remove</button></td></tr></table>';
 	
-	//add new html, make the button, and make the new word sortable
+	//add new html, make the buttons, and make the new word sortable
 	$('#topWord').after(html);
 	$('#playWord' + wordId).button({});
+        $('#removeWord' + wordId).button({});
 	makeSortableWord(wordId);
 
 	//refresh the pool to be connected with the new word
@@ -104,7 +122,8 @@ function makeNewWord() {
 // to the number of letters. If not, subtracts points.
 //
 function playWord(num) {
-	var idArr = $('#word' + num).sortable('toArray');
+	var wordId = 'word' + num;
+	var idArr = $('#' + wordId).sortable('toArray');
 	var word = getWordFromArr(idArr);
 	if (alreadyPlayed[word]) return; //ignore words already played
 	if (dict[word]) {
@@ -116,6 +135,31 @@ function playWord(num) {
 	       $('#table' + num).remove();
 	}
 	$('#score').html('Player: ' + score);
+	
+	//remove from the must play group
+	delete mustPlay[wordId];
+	if ($.isEmptyObject(mustPlay)) {
+		$('#newLetter').attr('disabled', false).css('opacity', '1');
+	}
+
+	//remove the remove button
+	$('#removeWord' + num).remove();
+}
+
+//
+// Removes the given word from the board, returning letters to the pool and enabling
+// the new letter button
+//
+function removeWord(num) {
+	var word = getWordFromArr($('#word' + num).sortable('toArray')).toUpperCase();
+	for (var i = 0; i < word.length; i++) {
+		addLetter(word.charAt(i));
+	}
+	$('#table' + num).remove();
+	delete mustPlay['word' + num];
+	if ($.isEmptyObject(mustPlay)) {
+		$('#newLetter').attr('disabled', false).css('opacity', '1');
+	}
 }
 
 //
@@ -182,17 +226,19 @@ function playHamsterTurn() {
 	//loop through the players words to try to use them
 	for (var j = 0; j < wordId; j++) {
 		var wordArr = $('#word' + j).sortable('toArray');
-		var word = getWordFromArr(wordArr);
+	       if (wordArr.length > 0) {
+			var word = getWordFromArr(wordArr);
 		
-		//look for anagrams of the words themselves first
-		if (findAnagram(word)) {
-			stolenWord = word;
-			$('#table' + j).remove();
-			hamsterScore += hamsterWord.length * hamsterWord.length;
-			alreadyPlayed[hamsterWord] = true;
-		       $('#hamsterScore').html('Hamster: ' + hamsterScore);
-			notifyPlayer('Hamster rearranged ' + stolenWord + ' to make ' + hamsterWord, 'victory')
-			return; //return early. only need to find one word
+			//look for anagrams of the words themselves first
+			if (findAnagram(word)) {
+				stolenWord = word;
+				$('#table' + j).remove();
+				hamsterScore += hamsterWord.length * hamsterWord.length;
+				alreadyPlayed[hamsterWord] = true;
+		       		$('#hamsterScore').html('Hamster: ' + hamsterScore);
+				notifyPlayer('Hamster rearranged ' + stolenWord + ' to make ' + hamsterWord, 'victory')
+				return; //return early. only need to find one word
+			}
 		}	
 	}
 	
@@ -214,25 +260,26 @@ function playHamsterTurn() {
 
 	//check the words with one letter added from the pool
 	for (var pool = 0; pool < poolLetters.length; pool++) {
-
-		//SELECT WORDS ACTUALLY IN PLAY
 		for (var wordNum = 0; wordNum < wordId; wordNum++) {
 			wordArr = $('#word' + wordNum).sortable('toArray');
-			word = getWordFromArr(wordArr);
-			checkWord = word + poolLetters.charAt(pool);
-			if ((hamsterDict[checkWord] && !alreadyPlayed[checkWord]) || findAnagram(checkWord)) {
-			      if (hamsterDict[checkWord] && !alreadyPlayed[checkWord]) {
+		
+		      if (wordArr.length > 0) {
+				word = getWordFromArr(wordArr);
+				checkWord = word + poolLetters.charAt(pool);
+				if ((hamsterDict[checkWord] && !alreadyPlayed[checkWord]) || findAnagram(checkWord)) {
+			      	      if (hamsterDict[checkWord] && !alreadyPlayed[checkWord]) {
 					hamsterWord = checkWord;
-			      }
-				$('#table' + wordNum).remove();
-				letterClass = 'LETTER_' + (hamsterWord.toUpperCase()).charAt(pool);
-				$('#pool').find('td.' + letterClass).remove();
-				hamsterScore += hamsterWord.length * hamsterWord.length;
-				alreadyPlayed[hamsterWord] = true;
-		       		$('#hamsterScore').html('Hamster: ' + hamsterScore);
-				notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' to ' + word + ' to make ' + hamsterWord, 'victory');
-				return; //return. only need to find one word
-			}	
+			      	      }
+					$('#table' + wordNum).remove();
+					letterClass = 'LETTER_' + (hamsterWord.toUpperCase()).charAt(pool);
+					$('#pool').find('td.' + letterClass).remove();
+					hamsterScore += hamsterWord.length * hamsterWord.length;
+					alreadyPlayed[hamsterWord] = true;
+		       			$('#hamsterScore').html('Hamster: ' + hamsterScore);
+					notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' to ' + word + ' to make ' + hamsterWord, 'victory');
+					return; //return. only need to find one word
+				}	
+			}
 		}
 	}
 	
