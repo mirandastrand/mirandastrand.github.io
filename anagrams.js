@@ -16,8 +16,8 @@ var mustPlay = {}; //words that have been altered and must be played before gett
 // establishes sortable letters and words, initializes buttons, gets starting letters
 //
 $(document).ready(function() {
-       loadDictionary('longdict.txt', dict);
-       loadAnagramMap('longdict.txt', hamsterDict, anagramMap);
+       loadDictionary('2of12inf.txt', dict);
+       loadAnagramMap('2of12inf.txt', hamsterDict, anagramMap);
 
        $(':button').button({});
        $('.letter').css('cursor', 'move');
@@ -325,14 +325,19 @@ function getType(block, attribute) {
 function loadDictionary(dictName, dictionary) {
 	$.get(dictName, function( txt ) {
     		//Get an array of all the words
-    		var words = txt.split( "\n" );
+    		var words = txt.split( "\r\n" ); //use \r\n for 2of12in, and \n for longdict
  
     		//Add them as properties to the dictionary to allow for fast lookup
     		for ( var i = 0; i < words.length; i++ ) {
-        		dictionary[ words[i] ] = true;
+			if (words[i].charAt(words[i].length - 1) !== '%') {				        		dictionary[ words[i] ] = true;
+			}
     		}
+		//console.log('loaded');
+		//if (dictionary['aardvark']) console.log('aardvark is there');
+		//console.log(JSON.stringify(dictionary));
+		if (dictionary['abandonments']) console.log('abandonments included');
+		if (dictionary['abandonment']) console.log('abandonment included');
 	});
-
 }
 
 //
@@ -342,20 +347,22 @@ function loadDictionary(dictName, dictionary) {
 function loadAnagramMap(mapName, dictionary, map) {
 	$.get(mapName, function( txt ) {
     		//Get an array of all the words
-    		var words = txt.split( "\n" );
+    		var words = txt.split( "\r\n" );
  
     		for ( var i = 0; i < words.length; i++ ) {
-			dictionary[ words[i] ] = true;
+			if (words[i].charAt(words[i].length - 1) !== '%') {
+				dictionary[ words[i] ] = true;
 	
-			//sort each 4+ letter word to account for it in the anagram map
-			if (words[i].length >= 4) {
-				var sortedWordArr = words[i].split(''); //make array
-				sortedWordArr = sortedWordArr.sort();
-				var sortedWord = sortedWordArr.join('');
-				if (map.hasOwnProperty(sortedWord)) {
-					map[sortedWord][map[sortedWord].length] = words[i]; //add word to the array
-				} else {
-					map[sortedWord] = [words[i]];
+				//sort each 4+ letter word to account for it in the anagram map
+				if (words[i].length >= 4) {
+					var sortedWordArr = words[i].split(''); //make array
+					sortedWordArr = sortedWordArr.sort();
+					var sortedWord = sortedWordArr.join('');
+					if (map.hasOwnProperty(sortedWord)) {
+						map[sortedWord][map[sortedWord].length] = words[i]; //add word to the array
+					} else {
+						map[sortedWord] = [words[i]];
+					}
 				}
 			}
     		}
