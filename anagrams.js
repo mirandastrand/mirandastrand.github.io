@@ -287,7 +287,7 @@ function playHamsterTurn() {
 				      if (pool == pool2) {
 						notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' to ' + word + ' to make ' + hamsterWord, 'victory');
 				      } else {
-				      	     notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' and ' + poolLetters.charAt(pool2) +  ' to ' + word + ' to make ' + hamsterWord, 'victory', 2200); //longer pause to read this message
+				      	     notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' and ' + poolLetters.charAt(pool2) +  ' to ' + word + ' to make ' + hamsterWord, 'victory', 2400); //longer pause to read this message
 				      }
 					return; //return. only need to find one word
 				}	
