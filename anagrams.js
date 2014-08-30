@@ -137,7 +137,7 @@ function playWord(num) {
 	       score -= word.length * word.length;
 	       $('#table' + num).remove();
 	}
-	$('#score').html('Player: ' + score);
+	$('#score').html('Human: ' + score);
 	
 	//remove from the must play group
 	delete mustPlay[wordId];
@@ -261,29 +261,39 @@ function playHamsterTurn() {
 		return; //found a word
 	}
 
-	//check the words with one letter added from the pool
+	//check the words with one or two letters added from the pool
 	for (var pool = 0; pool < poolLetters.length; pool++) {
+ 	    for (var pool2 = pool; pool2 < poolLetters.length; pool2++) {
 		for (var wordNum = 0; wordNum < wordId; wordNum++) {
 			wordArr = $('#word' + wordNum).sortable('toArray');
 		
-		      if (wordArr.length > 0) {
+		      if (wordArr.length >= 4) {
 				word = getWordFromArr(wordArr);
-				checkWord = word + poolLetters.charAt(pool);
+			      if (pool == pool2) {
+					checkWord = word + poolLetters.charAt(pool);
+			      } else {
+				      checkWord = word + poolLetters.charAt(pool) + poolLetters.charAt(pool2);
+			      }
 				if ((hamsterDict[checkWord] && !alreadyPlayed[checkWord]) || findAnagram(checkWord)) {
 			      	      if (hamsterDict[checkWord] && !alreadyPlayed[checkWord]) {
 					hamsterWord = checkWord;
 			      	      }
 					$('#table' + wordNum).remove();
 					letterClass = 'LETTER_' + (hamsterWord.toUpperCase()).charAt(pool);
-					$('#pool').find('td.' + letterClass).remove();
+					$('#pool').find('td.' + letterClass).first().remove();
 					hamsterScore += hamsterWord.length * hamsterWord.length;
 					alreadyPlayed[hamsterWord] = true;
 		       			$('#hamsterScore').html('Hamster: ' + hamsterScore);
-					notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' to ' + word + ' to make ' + hamsterWord, 'victory');
+				      if (pool == pool2) {
+						notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' to ' + word + ' to make ' + hamsterWord, 'victory');
+				      } else {
+				      	     notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' and ' + poolLetters.charAt(pool2) +  ' to ' + word + ' to make ' + hamsterWord, 'victory', 2200); //longer pause to read this message
+				      }
 					return; //return. only need to find one word
 				}	
 			}
 		}
+	   }
 	}
 	
 }
@@ -292,7 +302,8 @@ function playHamsterTurn() {
 // Prints the given message for the player
 // pic specifies the image for a hamster comment
 //
-function notifyPlayer(message, pic) {
+function notifyPlayer(message, pic, pause) {
+	if (!pause) pause = 1900;
 	if (pic === 'victory') {
 		$('#hamster').attr('src', 'images/hamstervictory.png');
 	} else if (pic === 'fool') {
@@ -302,7 +313,7 @@ function notifyPlayer(message, pic) {
 	setTimeout(function () {
             $('#message').remove();
 	    $('#hamster').attr('src', 'images/hamster.png');
-        }, 1900);
+        }, pause);
 }
 
 //
