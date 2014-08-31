@@ -262,6 +262,7 @@ function playHamsterTurn() {
 		alreadyPlayed[hamsterWord] = true;
 		$('#hamsterScore').html('Hamster: ' + hamsterScore);
 		notifyPlayer('Hamster made ' + hamsterWord + ' from the pool', 'victory');
+	       $('#pool').sortable('refreshPositions');
 		return; //found a word
 	}
 
@@ -283,7 +284,7 @@ function playHamsterTurn() {
 					hamsterWord = checkWord;
 			      	      }
 					$('#table' + wordNum).remove();
-					letterClass = 'LETTER_' + (hamsterWord.toUpperCase()).charAt(pool);
+					letterClass = 'LETTER_' + (poolLetters.toUpperCase()).charAt(pool);
 					$('#pool').find('td.' + letterClass).first().remove();
 					hamsterScore += hamsterWord.length * hamsterWord.length;
 					alreadyPlayed[hamsterWord] = true;
@@ -292,7 +293,10 @@ function playHamsterTurn() {
 						notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' to ' + word + ' to make ' + hamsterWord, 'victory');
 				      } else {
 				      	     notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' and ' + poolLetters.charAt(pool2) +  ' to ' + word + ' to make ' + hamsterWord, 'victory', 2400); //longer pause to read this message
+					     var letterClass2 = 'LETTER_' + (poolLetters.toUpperCase()).charAt(pool2);
+					     $('#pool').find('td.' + letterClass2).filter(':first').remove();
 				      }
+				      $('#pool').sortable('refreshPositions');
 					return; //return. only need to find one word
 				}	
 			}
