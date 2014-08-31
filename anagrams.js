@@ -10,6 +10,7 @@ var letterId = 0; //count of all letters played to create unique identifiers
 var wordId = 0; //count of all the words on the board to create unique identifiers
 		//starts at 1 to account for the word placed initially on the board
 var mustPlay = {}; //words that have been altered and must be played before getting new letter
+var hamsterPic = 'hamster'; //updated when hamster transforms
 
 // 
 // Handles necessary game initialization: loads dictionary and anagram maps,
@@ -147,6 +148,9 @@ function playWord(num) {
 
 	//remove the remove button
 	$('#removeWord' + num).remove();
+	
+	//defang if appropriate
+	giveFangs();
 }
 
 //
@@ -239,7 +243,7 @@ function playHamsterTurn() {
 				hamsterScore += hamsterWord.length * hamsterWord.length;
 				alreadyPlayed[hamsterWord] = true;
 		       		$('#hamsterScore').html('Hamster: ' + hamsterScore);
-				notifyPlayer('Hamster rearranged ' + stolenWord + ' to make ' + hamsterWord, 'victory')
+				notifyPlayer('Hamster rearranged ' + stolenWord + ' to make ' + hamsterWord, 'victory');
 				return; //return early. only need to find one word
 			}
 		}	
@@ -295,7 +299,29 @@ function playHamsterTurn() {
 		}
 	   }
 	}
-	
+}
+
+// 
+// Gives hamster fangs if he is up by 100 points. Removes them when player catches up
+//
+function giveFangs() {
+	if (hamsterScore - score >= 100 && hamsterPic !== 'fangedhamster') {
+		hamsterPic = 'fangedhamster';
+		var message = 'Hamster is up 100 points!';
+		$('<div id = \"message\">&nbsp;' + message + '&nbsp;</div>').appendTo('body');
+		setTimeout(function () {
+            		$('#message').remove();
+	    		$('#hamster').attr('src', 'images/' +  hamsterPic + '.png');
+        	}, 1900);
+	} else if (hamsterPic === 'fangedhamster' && score - hamsterScore >= 0) {
+		hamsterPic = 'hamster';
+		var message = 'You have successfully de-fanged Hamster!';
+		$('<div id = \"message\">&nbsp;' + message + '&nbsp;</div>').appendTo('body');
+		setTimeout(function () {
+            		$('#message').remove();
+	    		$('#hamster').attr('src', 'images/' +  hamsterPic + '.png');
+        	}, 1900);
+	}
 }
 
 //
@@ -305,14 +331,17 @@ function playHamsterTurn() {
 function notifyPlayer(message, pic, pause) {
 	if (!pause) pause = 1900;
 	if (pic === 'victory') {
-		$('#hamster').attr('src', 'images/hamstervictory.png');
+		$('#hamster').attr('src', 'images/' + hamsterPic + 'victory.png');
 	} else if (pic === 'fool') {
-		$('#hamster').attr('src', 'images/hamsterfool.png');
+		$('#hamster').attr('src', 'images/' + hamsterPic + 'fool.png');
 	}
 	$('<div id = \"message\">&nbsp;' + message + '&nbsp;</div>').appendTo('body');
 	setTimeout(function () {
             $('#message').remove();
-	    $('#hamster').attr('src', 'images/hamster.png');
+	     $('#hamster').attr('src', 'images/' + hamsterPic + '.png');
+            setTimeout(function () {
+		giveFangs();
+	    }, 800);
         }, pause);
 }
 
@@ -343,11 +372,6 @@ function loadDictionary(dictName, dictionary) {
 			if (words[i].charAt(words[i].length - 1) !== '%') {				        		dictionary[ words[i] ] = true;
 			}
     		}
-		//console.log('loaded');
-		//if (dictionary['aardvark']) console.log('aardvark is there');
-		//console.log(JSON.stringify(dictionary));
-		if (dictionary['abandonments']) console.log('abandonments included');
-		if (dictionary['abandonment']) console.log('abandonment included');
 	});
 }
 
