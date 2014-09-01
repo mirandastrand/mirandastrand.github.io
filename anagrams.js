@@ -281,7 +281,7 @@ function playHamsterTurn() {
 			      }
 				if ((hamsterDict[checkWord] && !alreadyPlayed[checkWord]) || findAnagram(checkWord)) {
 			      	      if (hamsterDict[checkWord] && !alreadyPlayed[checkWord]) {
-					hamsterWord = checkWord;
+					hamsterWord = checkWord; //wouldn't have been set already
 			      	      }
 					$('#table' + wordNum).remove();
 					letterClass = 'LETTER_' + (poolLetters.toUpperCase()).charAt(pool);
