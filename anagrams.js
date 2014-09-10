@@ -94,9 +94,9 @@ function addLetter(letter) {
 	$('#pool').find('tr').after('<td id = \"letter' + letterId + '\" class = \"circle LETTER_' + letter + '\" width = "80">' + letter + '</td>');
 	letterId++;
 
-	//remove last letter if there are over 10
+	//remove last letter if there are over 15
 	var poolLetters = getWordFromArr($('#pool').sortable('toArray'));
-	if (poolLetters.length > 10) {
+	if (poolLetters.length > 15) {
 		$('#pool').find('td:last').remove();
 	}
 
@@ -218,14 +218,20 @@ function playHamsterTurn() {
 	}
 
 	//
-	// Finds all subsets of a string and checks them for anagrams
+	// Find all subsets by enumerating an integer and taking the letters 
+	// corresponding to the bits that are set in each integer
 	//
 	function findSubsetAnagrams(str) {
 		if (str.length < 4) return false;
-		if (findAnagram(str)) return true;
-		for (var p = 0; p < str.length; p++) {
-			var noP = str.substring(0, p) + str.substring(p+1);
-			if (findSubsetAnagrams(noP)) return true;
+		for (var flag = 1; flag < Math.pow(2, str.length); flag++) {
+			var letterSet = '';
+			for (var i = 0; i < str.length; i++) {
+				var mask = 1 << i;
+				if (flag & mask) letterSet += str.charAt(i);
+			}
+			if (letterSet.length >= 4 && findAnagram(letterSet)) {
+				return true;
+			}
 		}
 		return false;
 	}
