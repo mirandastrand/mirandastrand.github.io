@@ -130,15 +130,17 @@ function playWord(num) {
 	var idArr = $('#' + wordId).sortable('toArray');
 	var word = getWordFromArr(idArr);
 	if (alreadyPlayed[word]) return; //ignore words already played
+	var value = word.length * word.length;
 	if (dict[word]) {
-		score += word.length * word.length;
+		score += value;
 		alreadyPlayed[word] = true;
+	       animateScore(value, num, true);
 	} else {
 		notifyPlayer(word + ' is not a real word!', 'fool');
-	       score -= word.length * word.length;
+	       score -= value;
+	      animateScore((-1 * value), num, true);
 	       $('#table' + num).remove();
 	}
-	$('#score').html('Human: ' + score);
 	
 	//remove from the must play group
 	delete mustPlay[wordId];
@@ -151,6 +153,59 @@ function playWord(num) {
 	
 	//defang if appropriate
 	giveFangs();
+}
+
+
+// 
+// Animation to increase the player or hamster's score by the word value
+//
+function animateScore(value, wordNum, player) {
+	//Get the starting offset for the score value
+	var wordOffset;
+	if (wordNum == -1) {
+		wordOffset = $('#pool').offset();
+	} else {
+		wordOffset = $('#word' + wordNum).offset();
+	}
+	if (player) {
+		wordOffset.left += $('#table' + wordNum).width();
+	} else {
+		if (wordNum == -1) {
+			wordOffset.left += ($('#pool').width() / 2);
+		} else {
+			wordOffset.left -= 25;
+		}
+	}
+
+	//Get the ending offset for the score value
+	var scoreOffset;
+	if (player) {
+		scoreOffset = $('#score').offset();
+		scoreOffset.left += ($('#score').width() - $('#valueScore').width() - 40);
+	} else {
+		scoreOffset = $('#hamsterScore').offset();
+		scoreOffset.left += 100;
+	}
+
+	//Reverse the direction if points are being lost
+	if (value < 0) {
+		wordOffset.left = scoreOffset.left;
+		wordOffset.top = scoreOffset.top;
+		scoreOffset.left -= 200;
+		scoreOffset.top += 200;
+	}
+
+
+	//Animate the score addition
+	$('<div id = \"scoreValue\">' + value + '</div>').appendTo('body').offset(wordOffset);
+	$('#scoreValue').animate({left: scoreOffset.left + 'px', top: scoreOffset.top + 'px', 'font-size': '40px'}, {duration: 300, always: function() {
+		$('#scoreValue').remove();
+		if (player) {
+			$('#score').html('Human: ' + score);
+		} else {
+			$('#hamsterScore').html('Hamster: ' + hamsterScore);
+		}
+	}});
 }
 
 //
@@ -245,10 +300,11 @@ function playHamsterTurn() {
 			//look for anagrams of the words themselves first
 			if (findAnagram(word)) {
 				stolenWord = word;
-				$('#table' + j).remove();
+				
 				hamsterScore += hamsterWord.length * hamsterWord.length;
 				alreadyPlayed[hamsterWord] = true;
-		       		$('#hamsterScore').html('Hamster: ' + hamsterScore);
+			      animateScore((hamsterWord.length * hamsterWord.length), j, false);
+			      $('#table' + j).remove();
 				notifyPlayer('Hamster rearranged ' + stolenWord + ' to make ' + hamsterWord, 'victory');
 				return; //return early. only need to find one word
 			}
@@ -274,12 +330,12 @@ function playHamsterTurn() {
 			      	      if (hamsterDict[checkWord] && !alreadyPlayed[checkWord]) {
 					hamsterWord = checkWord; //wouldn't have been set already
 			      	      }
-					$('#table' + wordNum).remove();
 					letterClass = 'LETTER_' + (poolLetters.toUpperCase()).charAt(pool);
 					$('#pool').find('td.' + letterClass).first().remove();
 					hamsterScore += hamsterWord.length * hamsterWord.length;
 					alreadyPlayed[hamsterWord] = true;
-		       			$('#hamsterScore').html('Hamster: ' + hamsterScore);
+		       			animateScore((hamsterWord.length * hamsterWord.length), wordNum, false);
+				      $('#table' + wordNum).remove();
 				      if (pool == pool2) {
 						notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' to ' + word + ' to make ' + hamsterWord, 'victory');
 				      } else {
@@ -304,7 +360,7 @@ function playHamsterTurn() {
 		}
 		hamsterScore += hamsterWord.length * hamsterWord.length;
 		alreadyPlayed[hamsterWord] = true;
-		$('#hamsterScore').html('Hamster: ' + hamsterScore);
+		animateScore((hamsterWord.length * hamsterWord.length), -1, false);
 		notifyPlayer('Hamster made ' + hamsterWord + ' from the pool', 'victory');
 	       $('#pool').sortable('refreshPositions');
 		return; //found a word
@@ -318,7 +374,7 @@ function giveFangs() {
 	if (hamsterScore - score >= 100 && hamsterPic !== 'fangedhamster') {
 		hamsterPic = 'fangedhamster';
 		var message = 'Hamster is up 100 points!';
-		$('<div id = \"message\">&nbsp;' + message + '&nbsp;</div>').appendTo('body');
+		$('<div id = \"message\">&nbsp;' + message + '&nbsp;</div>').appendTo('body').css('z-index', '900');
 		setTimeout(function () {
             		$('#message').remove();
 	    		$('#hamster').attr('src', 'images/' +  hamsterPic + '.png');
