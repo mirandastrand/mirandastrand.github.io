@@ -248,25 +248,10 @@ function playHamsterTurn() {
 			}
 		}	
 	}
-	
-	//check the pool for words
-	var poolArr = $('#pool').sortable('toArray');
-	var poolLetters = getWordFromArr(poolArr);
-	if (poolLetters.length > 5 && findSubsetAnagrams(poolLetters)) {
-		//remove letters from pool
-		for (var k = 0; k < hamsterWord.length; k++) {
-			var letterClass = 'LETTER_' + (hamsterWord.toUpperCase()).charAt(k);
-			$('#pool').find('td.' + letterClass).first().remove();
-		}
-		hamsterScore += hamsterWord.length * hamsterWord.length;
-		alreadyPlayed[hamsterWord] = true;
-		$('#hamsterScore').html('Hamster: ' + hamsterScore);
-		notifyPlayer('Hamster made ' + hamsterWord + ' from the pool', 'victory');
-	       $('#pool').sortable('refreshPositions');
-		return; //found a word
-	}
 
 	//check the words with one or two letters added from the pool
+      	var poolArr = $('#pool').sortable('toArray');
+	var poolLetters = getWordFromArr(poolArr);
 	for (var pool = 0; pool < poolLetters.length; pool++) {
  	    for (var pool2 = pool; pool2 < poolLetters.length; pool2++) {
 		for (var wordNum = 0; wordNum < wordId; wordNum++) {
@@ -302,6 +287,21 @@ function playHamsterTurn() {
 			}
 		}
 	   }
+	}
+
+	//check the pool for words
+	if (poolLetters.length > 5 && findSubsetAnagrams(poolLetters)) {
+		//remove letters from pool
+		for (var k = 0; k < hamsterWord.length; k++) {
+			var letterClass = 'LETTER_' + (hamsterWord.toUpperCase()).charAt(k);
+			$('#pool').find('td.' + letterClass).first().remove();
+		}
+		hamsterScore += hamsterWord.length * hamsterWord.length;
+		alreadyPlayed[hamsterWord] = true;
+		$('#hamsterScore').html('Hamster: ' + hamsterScore);
+		notifyPlayer('Hamster made ' + hamsterWord + ' from the pool', 'victory');
+	       $('#pool').sortable('refreshPositions');
+		return; //found a word
 	}
 }
 
