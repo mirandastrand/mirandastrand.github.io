@@ -74,7 +74,7 @@ function setUpGame() {
 	}});
 
 	getStartingWordsAndLetters();
-
+	$('.inPlay').hide();
 	$('.inPlay').fadeIn(800);
 
 	setTimeout(function(){$('#hamster').attr('src', 'images/' +  hamsterPic + '.png');}, 2200)
@@ -101,7 +101,7 @@ function getStartingWordsAndLetters() {
 //
 function makeSortableWord(num) {
 	$('#word' + num).sortable({items: 'td', tolerance: 'pointer', dropOnEmpty: true, opacity: 1, start: function () {
-		$(this).addClass('highlight').addClass('inPlay');
+		$(this).addClass('highlight');
 	}, stop: function() {
 		$(this).removeClass('highlight');
 	}, update: function() {
@@ -157,7 +157,7 @@ function addLetter(letter) {
 // Sets up a new word block
 //
 function makeNewWord() {
-	var html = '<p><table id = \"table' + wordId + '\"><tr><td rowspan = \"2\"><table id = \"word' + wordId + '\" class = \"word connect\"><tr><td id = \"none\"></td></tr></table></td><td width = \"20\"></td><td><button id = \"playWord' + wordId + '\" onclick = \"playWord(' + wordId + ')\">Play Word</button></tr><tr><td></td><td><button id = \"removeWord' + wordId + '\" onclick = \"removeWord(' + wordId + ')\">Remove</button></td></tr></table>';
+	var html = '<p><table id = \"table' + wordId + '\" class = \"inPlay\"><tr><td rowspan = \"2\"><table id = \"word' + wordId + '\" class = \"word connect inPlay\"><tr><td id = \"none\"></td></tr></table></td><td width = \"20\"></td><td><button class = \"inPlay\" id = \"playWord' + wordId + '\" onclick = \"playWord(' + wordId + ')\">Play Word</button></tr><tr><td></td><td><button class = \"inPlay\" id = \"removeWord' + wordId + '\" onclick = \"removeWord(' + wordId + ')\">Remove</button></td></tr></table>';
 	
 	//add new html, make the buttons, and make the new word sortable
 	$('#topWord').after(html);
