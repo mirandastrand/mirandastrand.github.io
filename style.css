@@ -18,6 +18,15 @@ div.title {
     padding:0;
 }
 
+#txtlzr {
+    font-size: 100px;
+    font-weight: bold;
+    width: 700px;
+    height: 600px;
+    margin-left: 100px;
+    margin-top: 50px;
+    opacity: 0.7;
+}
 
 div.text {
     position: relative;

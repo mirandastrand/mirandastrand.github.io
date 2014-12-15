@@ -1,4 +1,6 @@
 var MAX_POOL_SIZE = 12;
+var MERCY_LETTER_COUNT = 5;
+var FANG_DIFFERENCE = 100;
 
 var dict = {}; //dictionary of valid english words
 var hamsterDict = {}; //does not have to be the same as the dictionary of valid words
@@ -19,14 +21,49 @@ var hamsterPic = 'hamster'; //updated when hamster transforms
 // establishes sortable letters and words, initializes buttons, gets starting letters
 //
 $(document).ready(function() {
-       loadDictionary('2of12inf.txt', dict);
-       loadAnagramMap('2of12inf.txt', hamsterDict, anagramMap);
+    loadDictionary('2of12inf.txt', dict);
+    loadAnagramMap('2of12inf.txt', hamsterDict, anagramMap);
 
-       $(':button').button({});
-       $('.letter').css('cursor', 'move');
+    $(':button').button({});
+    $('.letter').css('cursor', 'move');
        
-       //build the letter frequency table
-       buildLetterTable();
+    //build the letter frequency table
+    buildLetterTable();
+
+    runIntro();
+	//setUpGame();	
+});
+
+//
+// Runs the intro animation, calls setUpGame
+//
+function runIntro() {
+	$('.inPlay').hide();
+
+	var list = ['PAY HOP SHADILY', 'A LADYSHIP HYPO', 'HAPPY HOLIDAYS', ''];  // list of blurbs
+
+	var txt = $('#txtlzr');  // The container in which to render the list
+
+	var options = {
+  		duration: 300,          // Time (ms) each blurb will remain on screen
+  		rearrangeDuration: 700, // Time (ms) a character takes to reach its position
+  		effect: 'slideTop', // Animation effect the characters use to appear
+  		hideEffect: 'slideTop',        
+  		centered: true           // Centers the text relative to its container
+	}
+
+	txt.textualizer(list, options); // textualize it!
+	txt.textualizer('start', setTimeout(function(){setUpGame()}, 13000)); // start
+
+	
+}
+
+
+//
+// Sets up the pool and starting word, fades in the text and buttons
+//
+function setUpGame() {
+	$('#txtlzr').remove();
 
 	//make the letter pool sortable
 	$('#pool').sortable({items: 'td', tolerance: 'pointer', connectWith: $('.connect'), dropOnEmpty: true, opacity: 1, start: function() {
@@ -35,6 +72,22 @@ $(document).ready(function() {
 		$('.word').removeClass('highlight');
 	}});
 
+	
+	getStartingWordsAndLetters();
+	$('#hamster').attr('src', 'images/' +  hamsterPic + 'normal.png');
+
+	$('.inPlay').fadeIn(800);
+	//$('.word').show();
+
+	
+	//$('#hamster').attr('src', 'images/' +  hamsterPic + 'normal.png');
+	setTimeout(function(){$('#hamster').attr('src', 'images/' +  hamsterPic + '.png');}, 2200)
+}
+
+//
+// Puts the first word slot and opening four letters on the board 
+//
+function getStartingWordsAndLetters() {
 	//make the first word sortable
 	makeNewWord();
 	makeSortableWord(0);
@@ -43,7 +96,7 @@ $(document).ready(function() {
 	for (var i = 0; i < 4; i++) {
 		getRandomLetter(false);
 	}
-});
+}
 
 //
 // Makes a word sortable, given the word count number. 
@@ -52,7 +105,7 @@ $(document).ready(function() {
 //
 function makeSortableWord(num) {
 	$('#word' + num).sortable({items: 'td', tolerance: 'pointer', dropOnEmpty: true, opacity: 1, start: function () {
-		$(this).addClass('highlight');
+		$(this).addClass('highlight').addClass('inPlay');
 	}, stop: function() {
 		$(this).removeClass('highlight');
 	}, update: function() {
@@ -302,7 +355,7 @@ function playHamsterTurn() {
 			}
 
 			//steal from the pool if there are more than 5 letters in it
-			if (str.length > 5 && letterSet.length >= 4 && findAnagram(letterSet)) {
+			if (str.length > MERCY_LETTER_COUNT && letterSet.length >= 4 && findAnagram(letterSet)) {
 				removeLetters = letterSet;
 				return true;
 			}
@@ -348,7 +401,7 @@ function playHamsterTurn() {
 		if (stolenWord == '') {
 			notifyPlayer('Hamster made ' + hamsterWord + ' from the pool', 'victory');	
 		} else {
-			notifyPlayer('Hamster added ' + removeLetters + ' to ' + stolenWord + ' to make ' + hamsterWord, 'victory');
+			notifyPlayer('Hamster added ' + removeLetters + ' to ' + stolenWord + ' to make ' + hamsterWord, 'victory', 2400);
 		}
 
 		$('#pool').sortable('refreshPositions');
@@ -360,9 +413,9 @@ function playHamsterTurn() {
 // Gives hamster fangs if he is up by 100 points. Removes them when player catches up
 //
 function giveFangs() {
-	if (hamsterScore - score >= 100 && hamsterPic !== 'fangedhamster') {
+	if (hamsterScore - score >= FANG_DIFFERENCE && hamsterPic !== 'fangedhamster') {
 		hamsterPic = 'fangedhamster';
-		var message = 'Hamster is up 100 points!';
+		var message = 'Hamster is up ' + FANG_DIFFERENCE + ' points!';
 		$('<div id = \"message\">&nbsp;' + message + '&nbsp;</div>').appendTo('body').css('z-index', '900');
 		setTimeout(function () {
             		$('#message').remove();
@@ -424,8 +477,9 @@ function loadDictionary(dictName, dictionary) {
  
     		//Add them as properties to the dictionary to allow for fast lookup
     		for ( var i = 0; i < words.length; i++ ) {
-			if (words[i].charAt(words[i].length - 1) !== '%') {				        		dictionary[ words[i] ] = true;
-			}
+				if (words[i].charAt(words[i].length - 1) !== '%') {				        		
+					dictionary[ words[i] ] = true;
+				}
     		}
 	});
 }
