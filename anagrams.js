@@ -1,3 +1,5 @@
+var MAX_POOL_SIZE = 12;
+
 var dict = {}; //dictionary of valid english words
 var hamsterDict = {}; //does not have to be the same as the dictionary of valid words
 var anagramMap = {}; //map of sorted letter combinations to words
@@ -94,9 +96,9 @@ function addLetter(letter) {
 	$('#pool').find('tr').after('<td id = \"letter' + letterId + '\" class = \"circle LETTER_' + letter + '\" width = "80">' + letter + '</td>');
 	letterId++;
 
-	//remove last letter if there are over 15
+	//remove last letter if there are over 12
 	var poolLetters = getWordFromArr($('#pool').sortable('toArray'));
-	if (poolLetters.length > 15) {
+	if (poolLetters.length > MAX_POOL_SIZE) {
 		$('#pool').find('td:last').remove();
 	}
 
@@ -250,11 +252,12 @@ function getWordFromArr(arr) {
 function playHamsterTurn() {
 	var stolenWord = '';
 	var hamsterWord = '';
+	var removeLetters = ''; //to remove from the pool
 
-        //
+    //
 	// Checks the anagram map for anagrams of a given word. Sets hamsterWord to be
-       // be the first one found. Makes sure the anagram has not already been played
-       //
+    // be the first one found. Makes sure the anagram has not already been played
+    //
 	function findAnagram(str) {
 		var strArr = str.split('');
 		strArr = strArr.sort();
@@ -263,7 +266,6 @@ function playHamsterTurn() {
 			for (var l = 0; l < anagramMap[sortedStr].length; l++) {
 				if (str !== anagramMap[sortedStr][l] && !alreadyPlayed[anagramMap[sortedStr][l]]) {
 					hamsterWord = anagramMap[sortedStr][l];
-					//console.log('hamster word: ' + hamsterWord);
 					return true;
 				}
 			}
@@ -277,14 +279,31 @@ function playHamsterTurn() {
 	// corresponding to the bits that are set in each integer
 	//
 	function findSubsetAnagrams(str) {
-		if (str.length < 4) return false;
-		for (var flag = 1; flag < Math.pow(2, str.length); flag++) {
+		//loop over subsets, prioritizing using all letters
+		for (var flag = Math.pow(2, str.length) - 1; flag >= 1; flag--) {
 			var letterSet = '';
 			for (var i = 0; i < str.length; i++) {
 				var mask = 1 << i;
 				if (flag & mask) letterSet += str.charAt(i);
 			}
-			if (letterSet.length >= 4 && findAnagram(letterSet)) {
+
+			//try to add to the player's words
+			for (i = wordId; i >= 0; i--) {
+				var wordArray = $('#word' + i).sortable('toArray');
+				var word = getWordFromArr(wordArray);
+	       		if (word.length > 0) {
+					if (findAnagram(letterSet + word)) {
+						removeLetters = letterSet;
+						stolenWord = word;
+						$('#table' + i).remove(); //remove from the board
+						return true;
+					}
+				}
+			}
+
+			//steal from the pool if there are more than 5 letters in it
+			if (str.length > 5 && letterSet.length >= 4 && findAnagram(letterSet)) {
+				removeLetters = letterSet;
 				return true;
 			}
 		}
@@ -294,75 +313,45 @@ function playHamsterTurn() {
 	//loop through the players words to try to use them
 	for (var j = 0; j < wordId; j++) {
 		var wordArr = $('#word' + j).sortable('toArray');
-	       if (wordArr.length > 0) {
-			var word = getWordFromArr(wordArr);
-		
+		var word = getWordFromArr(wordArr);
+	       if (word.length > 0) {
 			//look for anagrams of the words themselves first
 			if (findAnagram(word)) {
 				stolenWord = word;
-				
 				hamsterScore += hamsterWord.length * hamsterWord.length;
 				alreadyPlayed[hamsterWord] = true;
-			      animateScore((hamsterWord.length * hamsterWord.length), j, false);
-			      $('#table' + j).remove();
+			    animateScore((hamsterWord.length * hamsterWord.length), j, false);
+			    $('#table' + j).remove();
 				notifyPlayer('Hamster rearranged ' + stolenWord + ' to make ' + hamsterWord, 'victory');
 				return; //return early. only need to find one word
 			}
 		}	
 	}
 
-	//check the words with one or two letters added from the pool
-      	var poolArr = $('#pool').sortable('toArray');
+	var poolArr = $('#pool').sortable('toArray');
 	var poolLetters = getWordFromArr(poolArr);
-	for (var pool = 0; pool < poolLetters.length; pool++) {
- 	    for (var pool2 = pool; pool2 < poolLetters.length; pool2++) {
-		for (var wordNum = 0; wordNum < wordId; wordNum++) {
-			wordArr = $('#word' + wordNum).sortable('toArray');
-		
-		      if (wordArr.length >= 4) {
-				word = getWordFromArr(wordArr);
-			      if (pool == pool2) {
-					checkWord = word + poolLetters.charAt(pool);
-			      } else {
-				      checkWord = word + poolLetters.charAt(pool) + poolLetters.charAt(pool2);
-			      }
-				if ((hamsterDict[checkWord] && !alreadyPlayed[checkWord]) || findAnagram(checkWord)) {
-			      	      if (hamsterDict[checkWord] && !alreadyPlayed[checkWord]) {
-					hamsterWord = checkWord; //wouldn't have been set already
-			      	      }
-					letterClass = 'LETTER_' + (poolLetters.toUpperCase()).charAt(pool);
-					$('#pool').find('td.' + letterClass).first().remove();
-					hamsterScore += hamsterWord.length * hamsterWord.length;
-					alreadyPlayed[hamsterWord] = true;
-		       			animateScore((hamsterWord.length * hamsterWord.length), wordNum, false);
-				      $('#table' + wordNum).remove();
-				      if (pool == pool2) {
-						notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' to ' + word + ' to make ' + hamsterWord, 'victory');
-				      } else {
-				      	     notifyPlayer('Hamster added ' + poolLetters.charAt(pool) + ' and ' + poolLetters.charAt(pool2) +  ' to ' + word + ' to make ' + hamsterWord, 'victory', 2400); //longer pause to read this message
-					     var letterClass2 = 'LETTER_' + (poolLetters.toUpperCase()).charAt(pool2);
-					     $('#pool').find('td.' + letterClass2).filter(':first').remove();
-				      }
-				      $('#pool').sortable('refreshPositions');
-					return; //return. only need to find one word
-				}	
-			}
-		}
-	   }
-	}
 
-	//check the pool for words
-	if (poolLetters.length > 5 && findSubsetAnagrams(poolLetters)) {
+	//check the pool for words using and not using the player's words
+	if (findSubsetAnagrams(poolLetters)) { //poolLetters.length > 5 && 
 		//remove letters from pool
-		for (var k = 0; k < hamsterWord.length; k++) {
-			var letterClass = 'LETTER_' + (hamsterWord.toUpperCase()).charAt(k);
+		for (var k = 0; k < removeLetters.length; k++) {
+			var letterClass = 'LETTER_' + (removeLetters.toUpperCase()).charAt(k);
 			$('#pool').find('td.' + letterClass).first().remove();
 		}
+
+		//update hamster score and words
 		hamsterScore += hamsterWord.length * hamsterWord.length;
 		alreadyPlayed[hamsterWord] = true;
 		animateScore((hamsterWord.length * hamsterWord.length), -1, false);
-		notifyPlayer('Hamster made ' + hamsterWord + ' from the pool', 'victory');
-	       $('#pool').sortable('refreshPositions');
+
+		//notify player
+		if (stolenWord == '') {
+			notifyPlayer('Hamster made ' + hamsterWord + ' from the pool', 'victory');	
+		} else {
+			notifyPlayer('Hamster added ' + removeLetters + ' to ' + stolenWord + ' to make ' + hamsterWord, 'victory');
+		}
+
+		$('#pool').sortable('refreshPositions');
 		return; //found a word
 	}
 }
