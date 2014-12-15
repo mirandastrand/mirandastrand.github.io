@@ -21,6 +21,7 @@ var hamsterPic = 'hamster'; //updated when hamster transforms
 // establishes sortable letters and words, initializes buttons, gets starting letters
 //
 $(document).ready(function() {
+	$('.inPlay').hide();
     loadDictionary('2of12inf.txt', dict);
     loadAnagramMap('2of12inf.txt', hamsterDict, anagramMap);
 
@@ -38,7 +39,7 @@ $(document).ready(function() {
 // Runs the intro animation, calls setUpGame
 //
 function runIntro() {
-	$('.inPlay').hide();
+	$('#hamster').attr('src', 'images/' +  hamsterPic + 'normal.png');
 
 	var list = ['PAY HOP SHADILY', 'A LADYSHIP HYPO', 'HAPPY HOLIDAYS', ''];  // list of blurbs
 
@@ -72,15 +73,10 @@ function setUpGame() {
 		$('.word').removeClass('highlight');
 	}});
 
-	
 	getStartingWordsAndLetters();
-	$('#hamster').attr('src', 'images/' +  hamsterPic + 'normal.png');
 
 	$('.inPlay').fadeIn(800);
-	//$('.word').show();
 
-	
-	//$('#hamster').attr('src', 'images/' +  hamsterPic + 'normal.png');
 	setTimeout(function(){$('#hamster').attr('src', 'images/' +  hamsterPic + '.png');}, 2200)
 }
 
