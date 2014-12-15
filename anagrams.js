@@ -32,7 +32,6 @@ $(document).ready(function() {
     buildLetterTable();
 
     runIntro();
-	//setUpGame();	
 });
 
 //
@@ -54,7 +53,7 @@ function runIntro() {
 	}
 
 	txt.textualizer(list, options); // textualize it!
-	txt.textualizer('start', setTimeout(function(){setUpGame()}, 13000)); // start
+	txt.textualizer('start', setTimeout(function(){setUpGame()}, 13500)); // start
 
 	
 }
@@ -67,7 +66,7 @@ function setUpGame() {
 	$('#txtlzr').remove();
 
 	//make the letter pool sortable
-	$('#pool').sortable({items: 'td', tolerance: 'pointer', connectWith: $('.connect'), dropOnEmpty: true, opacity: 1, start: function() {
+	$('#pool').sortable({items: 'td', tolerance: 'pointer', connectWith: $('.connect'), dropOnEmpty: true, opacity: 1, start: function(ui) {
 		$('.word').addClass('highlight');
 	}, stop: function() {
 		$('.word').removeClass('highlight');
