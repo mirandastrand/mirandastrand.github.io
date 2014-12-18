@@ -2,6 +2,8 @@ var MAX_POOL_SIZE = 12;
 var MERCY_LETTER_COUNT = 5;
 var FANG_DIFFERENCE = 100;
 
+var humanDictName = 'sowpods.txt';
+var hamsterDictName = '2of12inf.txt';
 var dict = {}; //dictionary of valid english words
 var hamsterDict = {}; //does not have to be the same as the dictionary of valid words
 var anagramMap = {}; //map of sorted letter combinations to words
@@ -22,8 +24,8 @@ var hamsterPic = 'hamster'; //updated when hamster transforms
 //
 $(document).ready(function() {
 	$('.inPlay').hide();
-    loadDictionary('2of12inf.txt', dict);
-    loadAnagramMap('2of12inf.txt', hamsterDict, anagramMap);
+    loadDictionary(humanDictName, dict);
+    loadAnagramMap(hamsterDictName, hamsterDict, anagramMap);
 
     $(':button').button({});
     $('.letter').css('cursor', 'move');
@@ -468,12 +470,12 @@ function getType(block, attribute) {
 function loadDictionary(dictName, dictionary) {
 	$.get(dictName, function( txt ) {
     		//Get an array of all the words
-    		var words = txt.split( "\r\n" ); //use \r\n for 2of12in, and \n for longdict
+    		var words = txt.split( "\n" ); //use \r\n for 2of12in, and \n for others
  
     		//Add them as properties to the dictionary to allow for fast lookup
     		for ( var i = 0; i < words.length; i++ ) {
 				if (words[i].charAt(words[i].length - 1) !== '%') {				        		
-					dictionary[ words[i] ] = true;
+					dictionary[ words[i].toLowerCase() ] = true; //lowercase for sowpods
 				}
     		}
 	});
@@ -486,7 +488,7 @@ function loadDictionary(dictName, dictionary) {
 function loadAnagramMap(mapName, dictionary, map) {
 	$.get(mapName, function( txt ) {
     		//Get an array of all the words
-    		var words = txt.split( "\r\n" );
+    		var words = txt.split( "\r\n" ); //use \r\n for 2of12in, and \n for others
  
     		for ( var i = 0; i < words.length; i++ ) {
 			if (words[i].charAt(words[i].length - 1) !== '%') {
