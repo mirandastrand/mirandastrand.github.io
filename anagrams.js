@@ -40,7 +40,7 @@ $(document).ready(function() {
 // Runs the intro animation, calls setUpGame
 //
 function runIntro() {
-	$('#hamster').attr('src', 'images/' +  hamsterPic + 'normal.png');
+	$('#hamster').attr('src', 'images/' +  hamsterPic + '.png');
 
 	var list = ['ANGSTROM SLIP', 'MALIGN SPORTS', 'ALMOST SPRING', ''];  // list of blurbs
 
