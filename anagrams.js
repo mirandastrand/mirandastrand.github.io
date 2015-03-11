@@ -42,7 +42,7 @@ $(document).ready(function() {
 function runIntro() {
 	$('#hamster').attr('src', 'images/' +  hamsterPic + 'normal.png');
 
-	var list = ['PAY HOP SHADILY', 'A LADYSHIP HYPO', 'HAPPY HOLIDAYS', ''];  // list of blurbs
+	var list = ['ANGSTROM SLIP', 'MALIGN SPORTS', 'ALMOST SPRING', ''];  // list of blurbs
 
 	var txt = $('#txtlzr');  // The container in which to render the list
 
