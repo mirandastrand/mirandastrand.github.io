@@ -17,6 +17,7 @@ var wordId = 0; //count of all the words on the board to create unique identifie
 		//starts at 1 to account for the word placed initially on the board
 var mustPlay = {}; //words that have been altered and must be played before getting new letter
 var hamsterPic = 'hamster'; //updated when hamster transforms
+var list = ['ANGSTROM SLIP', 'MALIGN SPORTS', 'ALMOST SPRING', ''];  // list of blurbs for intro
 
 // 
 // Handles necessary game initialization: loads dictionary and anagram maps,
@@ -41,8 +42,6 @@ $(document).ready(function() {
 //
 function runIntro() {
 	$('#hamster').attr('src', 'images/' +  hamsterPic + '.png');
-
-	var list = ['ANGSTROM SLIP', 'MALIGN SPORTS', 'ALMOST SPRING', ''];  // list of blurbs
 
 	var txt = $('#txtlzr');  // The container in which to render the list
 
